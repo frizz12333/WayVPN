@@ -31,5 +31,5 @@
 1. Сайт — [way.lastfire.ru](https://www.way.lastfire.ru)
 2. Телеграм — [@WayWayVPN](https://t.me/@WayWayVPN)
 3. Телеграм релизы — [@WayWayDownload](https://t.me/@WayWayDownload)
-4. Поддержка — [@WayWaySupport](https://t.me/@WayWaySupport)
+4. Поддержка — [@WayWaySupport](https://t.me/@WayWaySupportBot)
 5. Донаты — [donationalerts](https://www.donationalerts.com/r/lastfirecompany)
