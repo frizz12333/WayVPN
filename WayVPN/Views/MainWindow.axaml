@@ -1,0 +1,142 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:WayVPN.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:WayVPN.Views"
+        mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="800"
+        x:Class="WayVPN.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/main.ico"
+        Title="WayVPN"
+        TransparencyLevelHint="Transparent">
+
+
+    <Window.Resources>
+        <LinearGradientBrush x:Key="GradientBrush">
+            <GradientStop Color="#7c52ff" Offset="0.0" />
+            <GradientStop Color="#3f00ff" Offset="1.0" />
+        </LinearGradientBrush>
+    </Window.Resources>
+
+    <Window.Background>
+        <StaticResource ResourceKey="GradientBrush" />
+    </Window.Background>
+
+    <Window.Styles>
+        <Style Selector="Button#ServerButton">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button#WayButton">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Button#SettingsButton">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+    </Window.Styles>
+
+    <views:MainView Padding="10,0,10,10">
+
+        <Grid Margin="10,0,10,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ContentControl Grid.Row="0" Content="{Binding CurrentView}" />
+
+            <Border
+                Grid.Row="1"
+                Grid.Column="0"
+                Background="#40FFFFFF"
+                Height="100"
+                VerticalAlignment="Bottom"
+                CornerRadius="10"
+                BorderBrush="#60FFFFFF"
+                BorderThickness="2"
+                x:Name="ButtonsBorder">
+
+
+                <Grid x:Name="ButtonGrid" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button
+                        Background="Transparent"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+
+                        Content="SERVERS"
+                        FontFamily="{StaticResource Main}"
+                        FontSize="15"
+
+                        Grid.Column="0"
+
+                        Foreground="#FFFFFF"
+                        Opacity="{Binding ServerButtonOpacity}"
+
+                        Command="{Binding ShowServer}"
+                        x:Name="ServerButton" />
+
+                    <Button
+                        Background="Transparent"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+
+                        Opacity="{Binding WayButtonOpacity}"
+
+                        Grid.Column="1"
+
+                        Command="{Binding ShowConnection}"
+                        x:Name="WayButton">
+                        <StackPanel>
+                            <Image x:Name="ServerImage" Source="/Assets/Images/Way/WayInactive.png" Opacity="1"
+                                   Width="70" Height="70" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button
+                        Background="Transparent"
+                        VerticalAlignment="Stretch"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+
+                        Content="SETTINGS"
+                        FontFamily="{StaticResource Main}"
+                        FontSize="15"
+
+                        Grid.Column="2"
+
+                        Foreground="#FFFFFF"
+                        Opacity="{Binding SettingsButtonOpacity}"
+
+                        Command="{Binding ShowSettings}"
+                        x:Name="SettingsButton" />
+                </Grid>
+            </Border>
+        </Grid>
+    </views:MainView>
+
+</Window>

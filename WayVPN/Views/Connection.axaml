@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:WayVPN.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="800"
+             x:Class="WayVPN.Views.Connection"
+             x:DataType="vm:ConnectionViewModel">
+    
+    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Border
+            Background="#40FFFFFF"
+            Height="100"
+            VerticalAlignment="Center"
+            CornerRadius="10"
+            BorderBrush="#60FFFFFF"
+            BorderThickness="2"
+            x:Name="StartBorder"
+            HorizontalAlignment="Stretch">
+
+
+            <Button
+                CornerRadius="10"
+                Background="{Binding ConnectionButtonColor}"
+
+                HorizontalContentAlignment="Center"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                HorizontalAlignment="Stretch"
+
+                Content="{Binding ConnectionButtonText}"
+                FontFamily="{StaticResource Main}"
+                FontSize="15"
+
+                Command="{Binding StartConnection}"
+                Foreground="#FFFFFF"
+                Opacity="1"
+
+                x:Name="ConnectionButton" />
+        </Border>
+    </Grid>
+</UserControl>

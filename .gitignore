@@ -1,0 +1,40 @@
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache/options
+.vs/
+.vscode/
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+*.apk
+*.ipa
+*.dll
+*.exe
+*.pdb
+*.cache
+build.log
+
+# MAUI specific
+[Aa]valonia/resources
+Resources/Raw/**
+Resources/Fonts/**
+
+# Other
+.DS_Store
+Thumbs.db

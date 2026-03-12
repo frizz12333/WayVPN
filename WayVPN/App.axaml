@@ -1,0 +1,185 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:WayVPN"
+             x:Class="WayVPN.App"
+             RequestedThemeVariant="Default">
+
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+
+    <Application.Resources>
+        <FontFamily x:Key="Main">avares://WayVPN/Assets/Fonts/Main.ttf#Unbounded</FontFamily>
+
+        
+         <ControlTheme x:Key="ModernCheckBox" TargetType="CheckBox">
+            <Setter Property="Background" Value="#4D4D4D" />
+            <Setter Property="BorderBrush" Value="#636262" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="8,0,0,0" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Grid Width="30" Height="30">
+                            <Border Name="BaseBorder"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Transitions="{TemplateBinding Transitions}">
+                                
+                                <Path Name="CheckGlyph"
+                                      Data="M 7 12 L 10 15 L 17 8"
+                                      Stroke="White"
+                                      StrokeThickness="2"
+                                      StrokeLineCap="Round"
+                                      StrokeJoin="Round"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      IsVisible="False" />
+                            </Border>
+                        </Grid>
+
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </StackPanel>
+                </ControlTemplate>
+            </Setter>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+
+            <Style Selector="^:pointerover /template/ Border#BaseBorder">
+                <Setter Property="BorderBrush" Value="#FF3333" />
+                
+            </Style>
+
+            <Style Selector="^:checked">
+                <Style Selector="^ /template/ Border#BaseBorder">
+                    <Setter Property="Background" Value="#FF3333" />
+                    <Setter Property="BorderBrush" Value="#FF3333" />
+                </Style>
+                <Style Selector="^ /template/ Path#CheckGlyph">
+                    <Setter Property="IsVisible" Value="True" />
+                    <Setter Property="Margin" Value="-7,-6,0,0"/>
+                </Style>
+            </Style>
+
+            <Style Selector="^:disabled">
+                <Setter Property="Opacity" Value="0.5" />
+            </Style>
+        </ControlTheme>
+        
+    </Application.Resources>
+    
+    <Application.Styles>
+        <Style Selector="Button.MainButton">
+            <Setter Property="Background" Value="#4D4D4D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            
+
+            
+            <Setter Property="Transitions">
+                <Transitions>
+                    <!-- Анимируем Color внутри SolidColorBrush -->
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Panel">
+            <Setter Property="Background" Value="#222222"/>
+        </Style>
+        
+        <!-- Стиль для окон -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#222222"/>
+        </Style>
+        
+
+        <Style Selector="Button.MainButton:pointerover">
+            <Setter Property="Background" Value="#FF3333"/>
+                <Setter Property="RenderTransform">
+            </Setter>
+        </Style>
+        
+        <!-- Стиль для состояния нажатия (ОТДЕЛЬНЫЙ элемент!) -->
+        <Style Selector="Button.MainButton:pressed">
+            <Setter Property="Background" Value="#8a1e1e"/>
+            <Setter Property="RenderTransform">
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button.MainButton:disabled">
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+
+
+       <Style Selector="TextBox">
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="BorderBrush" Value="#555555"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontFamily" Value="{StaticResource Main}"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding CornerRadius}">
+                            <TextPresenter Name="PART_TextPresenter"
+                                           Text="{TemplateBinding Text}"
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           Margin="4,0"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <!-- Состояния -->
+        <Style Selector="TextBox:pointerover">
+            <Setter Property="BorderBrush" Value="#888888"/>
+        </Style>
+
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="#FF3333"/>
+            <Setter Property="Background" Value="#3a3a3a"/>
+        </Style>
+
+        <Style Selector="TextBox:disabled">
+            <Setter Property="Background" Value="#2a2a2a"/>
+            <Setter Property="Foreground" Value="#888888"/>
+            <Setter Property="BorderBrush" Value="#444444"/>
+            <Setter Property="Opacity" Value="0.6"/>
+        </Style>
+    </Application.Styles>
+</Application>
