@@ -9,18 +9,18 @@ namespace WayVPN.VPN;
 
 public class Vpn
 {
-    private const string ServerHost  = "151.245.136.84";
+    private const string ServerHost  = "";
     private const int    ServerPort  = 4443;
-    private const string UserId      = "b79e6396-e95a-411c-8b14-7970315ea033";
-    private const string PublicKey   = "P3ulVGd6nZkN73rysLVGaqp2BRlq01DzVgHM9CVtm2A";
-    private const string ShortId     = "6ba85179e30d4fc2";
+    private const string UserId      = "";
+    private const string PublicKey   = "";
+    private const string ShortId     = "";
     private const string ServerName  = "vk.ru";
     private const string Fingerprint = "chrome";
     public  const int    Socks5Port  = 10808;
 
     private static string? _binDir;
     private static string? _dataDir;
-    
+
     // Android устанавливает эти делегаты в AndroidVpnPlatform
     public static Func<string, string, Task<bool>>? ProcessStarter { get; set; }
     public static Action? ProcessStopper { get; set; }
@@ -62,7 +62,7 @@ public class Vpn
     private static string GetRuntimeId()
     {
         bool isWindows = OperatingSystem.IsWindows();
-        bool isArm     = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture 
+        bool isArm     = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture
                          == System.Runtime.InteropServices.Architecture.Arm64;
 
         if (isWindows) return isArm ? "win-arm64" : "win-x64";
@@ -164,7 +164,7 @@ public class Vpn
     private static string WriteXrayConfig()
     {
         bool useGeoip = ProcessStarter == null;
-        
+
         var config = new
         {
             log = new { loglevel = "warning" },
