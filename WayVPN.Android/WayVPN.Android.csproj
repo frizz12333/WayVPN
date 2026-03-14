@@ -13,6 +13,16 @@
     <AndroidFastDeployment>false</AndroidFastDeployment>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <AndroidLinkMode>None</AndroidLinkMode>
+    <PublishTrimmed>true</PublishTrimmed>
+    <AndroidKeyStore>true</AndroidKeyStore>
+    <AndroidSigningKeyStore>$(HOME)/wayvpn.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyAlias>wayvpn</AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>lastfireway</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>lastfireway</AndroidSigningStorePass>
+  </PropertyGroup>
+
   <ItemGroup>
     <AndroidResource Include="Icon.png">
       <Link>Resources\drawable\Icon.png</Link>

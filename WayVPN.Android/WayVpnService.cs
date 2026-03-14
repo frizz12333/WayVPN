@@ -59,8 +59,13 @@ public class WayVpnService : VpnService
         try
         {
             Vpn.SetBinDir(ApplicationInfo!.NativeLibraryDir!);
-            Vpn.SetDataDir(GetDir("vpn", FileCreationMode.Private)!.AbsolutePath);
+            string dataDir = GetDir("vpn", FileCreationMode.Private)!.AbsolutePath;
+            Vpn.SetDataDir(dataDir);
 
+            // Копируем geo файлы из assets в dataDir рядом с конфигом
+            CopyAssetToDir("xray/geoip.dat",   dataDir);
+            CopyAssetToDir("xray/geosite.dat", dataDir);
+            
             ShowNotification("Подключение...");
 
             _tunFd = CreateTunInterface();
@@ -83,6 +88,23 @@ public class WayVpnService : VpnService
         }
     }
 
+    private void CopyAssetToDir(string assetPath, string destDir)
+    {
+        string destFile = Path.Combine(destDir, Path.GetFileName(assetPath));
+        if (File.Exists(destFile)) return; // уже скопирован
+        try
+        {
+            using var input  = Assets!.Open(assetPath);
+            using var output = File.Create(destFile);
+            input.CopyTo(output);
+            Console.WriteLine($"[Assets] Скопирован {assetPath} → {destFile}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Assets] Ошибка копирования {assetPath}: {e.Message}");
+        }
+    }
+    
     private ParcelFileDescriptor? CreateTunInterface()
     {
         var builder = new Builder(this)

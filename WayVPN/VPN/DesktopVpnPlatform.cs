@@ -19,6 +19,8 @@ public class DesktopVpnPlatform : IVpnPlatform
 
     private readonly Vpn _vpn;
     private Process?     _tun2socksProcess;
+    
+    private const string ServerHost = "151.245.136.84";
 
     public DesktopVpnPlatform(Vpn vpn)
     {
@@ -65,51 +67,135 @@ public class DesktopVpnPlatform : IVpnPlatform
 
         if (OperatingSystem.IsLinux())
         {
-            string ipBin = File.Exists("/sbin/ip") ? "/sbin/ip" : "/usr/sbin/ip";
+            string ip = "/sbin/ip";
+            RunCommand(ip, $"rule del uidrange 0-0 lookup 100 priority 100");
+            RunCommand(ip, $"route flush table 100");
+            RunCommand(ip, $"route del 0.0.0.0/0 dev {TunName}");
+            RunCommand(ip, $"route del 151.245.136.84/32");
+            RunCommand(ip, $"link delete {TunName}");
+            
+            // Восстанавливаем DNS
+            // RestoreDnsLinux();
+            
+            //string ipBin = File.Exists("/sbin/ip") ? "/sbin/ip" : "/usr/sbin/ip";
             // Удаляем все маршруты через wayvpn0
-            RunCommand(ipBin, $"route del 0.0.0.0/0 dev {TunName}");
-            RunCommand(ipBin, $"route del 195.46.165.194/32");
+            //RunCommand(ipBin, $"route del 0.0.0.0/0 dev {TunName}", ignoreErrors: true);
+            //RunCommand(ipBin, "route del 151.245.136.84/32", ignoreErrors: true);
             // Удаляем интерфейс
-            RunCommand(ipBin, $"link delete {TunName}");
+            //RunCommand(ipBin, $"link delete {TunName}", ignoreErrors: true);
         }
         else if (OperatingSystem.IsWindows())
         {
-            RunCommand("route", "delete 0.0.0.0 mask 0.0.0.0");
-            RunCommand("route", $"delete 195.46.165.194");
+            RunCommand("route", "delete 0.0.0.0 mask 0.0.0.0", ignoreErrors: true);
+            RunCommand("route", "delete 151.245.136.84", ignoreErrors: true);
         }
 
         _vpn.StopConnection();
         Console.WriteLine("[Desktop] VPN остановлен");
     }
+    
+    // ──────────────────────────── DNS ────────────────────────────
+    
+    private static void SetupDnsLinux()
+    {
+        try
+        {
+            // Бэкап оригинального resolv.conf
+            if (!File.Exists("/etc/resolv.conf.wayvpn.backup"))
+            {
+                RunCommand("cp", "/etc/resolv.conf /etc/resolv.conf.wayvpn.backup");
+            }
+            
+            // Создаём новый resolv.conf с Google DNS
+            string dnsContent = @"# WayVPN DNS
+nameserver 8.8.8.8
+nameserver 8.8.4.4
+nameserver 1.1.1.1
+";
+            
+            File.WriteAllText("/tmp/resolv.conf.wayvpn", dnsContent);
+            RunCommand("cp", "/tmp/resolv.conf.wayvpn /etc/resolv.conf");
+            
+            Console.WriteLine("[DNS] Настроен Google DNS (8.8.8.8, 8.8.4.4)");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DNS] Ошибка настройки: {ex.Message}");
+        }
+    }
+    
+    private static void RestoreDnsLinux()
+    {
+        try
+        {
+            if (File.Exists("/etc/resolv.conf.wayvpn.backup"))
+            {
+                RunCommand("cp", "/etc/resolv.conf.wayvpn.backup /etc/resolv.conf");
+                File.Delete("/etc/resolv.conf.wayvpn.backup");
+                Console.WriteLine("[DNS] Восстановлен оригинальный DNS");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[DNS] Ошибка восстановления: {ex.Message}");
+        }
+    }
+
     // ──────────────────────────── LINUX ────────────────────────────
 
     private async Task SetupLinuxTunAsync()
     {
+        string ip = "/sbin/ip";
         Console.WriteLine("[Desktop] Настройка TUN (Linux)...");
 
-        // Создаём TUN интерфейс
-        RunCommand("ip", $"tuntap add dev {TunName} mode tun");
-        RunCommand("ip", $"addr add {TunAddress}/{TunPrefix} dev {TunName}");
-        RunCommand("ip", $"link set dev {TunName} mtu {TunMtu} up");
-
-        // Сохраняем текущий gateway чтобы трафик к серверу xray не зациклился
         string gateway  = GetLinuxDefaultGateway();
-        string serverIp = "195.46.165.194"; // IP сервера xray
-        Console.WriteLine($"[Desktop] Gateway: {gateway}, ServerIP: {serverIp}");
+        string iface    = GetLinuxDefaultInterface();
+        string serverIp = ServerHost;
+        Console.WriteLine($"[Desktop] Gateway: {gateway}, Iface: {iface}, ServerIP: {serverIp}");
 
-        // Маршрут к серверу xray через реальный интерфейс (не через TUN)
-        if (!string.IsNullOrEmpty(gateway))
-            RunCommand("ip", $"route add {serverIp}/32 via {gateway}");
+        // Создаём TUN
+        RunCommand(ip, $"tuntap add dev {TunName} mode tun");
+        RunCommand(ip, $"addr add {TunAddress}/{TunPrefix} dev {TunName}");
+        RunCommand(ip, $"link set dev {TunName} mtu {TunMtu} up");
+
+        // Таблица 100 — трафик идёт через реальный интерфейс (для xray и root)
+        RunCommand(ip, $"route add default via {gateway} dev {iface} table 100");
+    
+        // Правило: трафик от root (uid 0) идёт через таблицу 100 (в обход TUN)
+        RunCommand(ip, $"rule add uidrange 0-0 lookup 100 priority 100");
+    
+        // Маршрут к серверу через реальный интерфейс
+        RunCommand(ip, $"route add {serverIp}/32 via {gateway} dev {iface}");
 
         // Весь остальной трафик через TUN
-        RunCommand("ip", $"route add 0.0.0.0/0 dev {TunName} metric 1");
+        RunCommand(ip, $"route add 0.0.0.0/0 dev {TunName} metric 1");
 
-        // Запускаем tun2socks
         StartTun2SocksDesktop(TunName);
-
         await Task.Delay(500);
         Console.WriteLine("[Desktop] TUN (Linux) готов");
     }
+
+    private static string GetLinuxDefaultInterface()
+    {
+        try
+        {
+            var psi = new ProcessStartInfo("/sbin/ip", "route show default")
+            {
+                RedirectStandardOutput = true,
+                UseShellExecute        = false
+            };
+            using var p = Process.Start(psi)!;
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            // "default via 192.168.31.1 dev enp4s0 ..."
+            var parts = output.Split(' ');
+            for (int i = 0; i < parts.Length - 1; i++)
+                if (parts[i] == "dev") return parts[i + 1].Trim();
+        }
+        catch (Exception e) { Console.WriteLine($"[Desktop] Interface error: {e.Message}"); }
+        return "eth0";
+    }
+    
 
     private static string GetLinuxDefaultGateway()
     {
@@ -150,7 +236,7 @@ public class DesktopVpnPlatform : IVpnPlatform
 
         // Маршрут к серверу xray через реальный gateway
         string gateway  = GetWindowsDefaultGateway();
-        string serverIp = "195.46.165.194";
+        string serverIp = "151.245.136.84";
         if (!string.IsNullOrEmpty(gateway))
             RunCommand("route", $"add {serverIp} mask 255.255.255.255 {gateway} metric 1");
 
@@ -221,7 +307,7 @@ public class DesktopVpnPlatform : IVpnPlatform
         Console.WriteLine($"[tun2socks] запущен pid={_tun2socksProcess.Id}");
     }
 
-    private static void RunCommand(string cmd, string args)
+    private static void RunCommand(string cmd, string args, bool ignoreErrors = false)
     {    
         if (OperatingSystem.IsLinux() && !cmd.StartsWith("/"))
         {
@@ -247,11 +333,17 @@ public class DesktopVpnPlatform : IVpnPlatform
             p.WaitForExit(5000);
             string err = p.StandardError.ReadToEnd();
             if (!string.IsNullOrWhiteSpace(err))
-                Console.WriteLine($"[cmd:err] {err.Trim()}");
+            {
+                if (ignoreErrors)
+                    Console.WriteLine($"[cmd:warn] {err.Trim()}");
+                else
+                    Console.WriteLine($"[cmd:err] {err.Trim()}");
+            }
         }
         catch (Exception e)
         {
-            Console.WriteLine($"[cmd:fail] {cmd} {args}: {e.Message}");
+            if (!ignoreErrors)
+                Console.WriteLine($"[cmd:fail] {cmd} {args}: {e.Message}");
         }
     }
 }

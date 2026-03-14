@@ -30,8 +30,17 @@ public class AndroidVpnPlatform : IVpnPlatform
         try
         {
             new Java.IO.File(xrayPath).SetExecutable(true, false);
-        
-            var pb = new Java.Lang.ProcessBuilder(xrayPath, "run", "-c", configPath);
+
+            // Копируем geo файлы в DataDir рядом с конфигом
+            string dataDir = Vpn.GetDataDir();
+            CopyAssetIfNeeded("xray/geoip.dat",   dataDir);
+            CopyAssetIfNeeded("xray/geosite.dat", dataDir);
+
+            var pb = new Java.Lang.ProcessBuilder(
+                    xrayPath, "run", "-c", configPath)
+                .Directory(new Java.IO.File(dataDir))
+                .RedirectErrorStream(true);
+
             pb.RedirectErrorStream(true);
             _javaProcess = pb.Start()!;
 
@@ -52,6 +61,24 @@ public class AndroidVpnPlatform : IVpnPlatform
             return false;
         }
     }
+
+    private void CopyAssetIfNeeded(string assetPath, string destDir)
+    {
+        string destFile = Path.Combine(destDir, Path.GetFileName(assetPath));
+        if (File.Exists(destFile)) return;
+        try
+        {
+            using var input  = _activity.Assets!.Open(assetPath);
+            using var output = File.Create(destFile);
+            input.CopyTo(output);
+            Console.WriteLine($"[Assets] {assetPath} → {destFile}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"[Assets] Ошибка {assetPath}: {e.Message}");
+        }
+    }
+
     public async Task StartAsync(Action onStarted, Action onFailed)
     {
         // 1. Запускаем xray (SOCKS5 прокси)
